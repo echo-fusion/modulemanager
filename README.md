@@ -1,8 +1,12 @@
 # ModuleManager
 
+[![CI](https://github.com/echo-fusion/modulemanager/actions/workflows/ci.yml/badge.svg)](https://github.com/echo-fusion/modulemanager/actions/workflows/ci.yml) [![Packagist](https://img.shields.io/packagist/v/echo-fusion/modulemanager.svg)](https://packagist.org/packages/echo-fusion/modulemanager) [![PHP](https://img.shields.io/badge/php-8.1%20%7C%208.2%20%7C%208.3-777bb4.svg)](https://www.php.net) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **ModuleManager** is a registry for application modules. A module is a self-contained feature bundle (for example "Blog" or "Shop") that declares what it adds to the application **as data**: its configuration, service providers, routes and template directory. The manager collects and merges them so the application can wire everything in one place.
 
 It implements `EchoFusion\Contracts\ModuleManager\ModuleManagerInterface` and modules implement `EchoFusion\Contracts\ModuleManager\ModuleInterface`, both from [echo-fusion/contracts](https://github.com/echo-fusion/contracts).
+
+> Part of [EchoFusion](https://github.com/echo-fusion), a modular PHP framework built from small packages.
 
 ## Installation
 
@@ -12,11 +16,7 @@ composer require echo-fusion/modulemanager
 
 ## Requirements
 
-The following versions of PHP are supported by this version.
-
-* PHP 8.1
-* PHP 8.2
-* PHP 8.3
+* PHP 8.1, 8.2 or 8.3
 
 ## Usage
 
@@ -81,7 +81,7 @@ $modules->all();                  // ['blog' => ..., 'shop' => ..., 'admin' => .
 
 | Method | Result |
 | --- | --- |
-| `getConfig()` | All module configs deeply merged in registration order (later modules win; merged with [echo-fusion/configmanager](https://github.com/echo-fusion/configmanager)). |
+| `getConfig()` | All module configs deeply merged in registration order (later modules win; associative arrays are merged recursively, lists are replaced). |
 | `getProviders()` | All service provider class names, without duplicates. |
 | `getRoutes()` | All routes keyed by name. |
 | `getTemplatePaths()` | `['blog' => '/path/to/templates', ...]` for modules that have templates. |

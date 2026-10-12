@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace EchoFusion\ModuleManager;
 
-use EchoFusion\ConfigManager\Config;
 use EchoFusion\Contracts\ModuleManager\ModuleInterface;
 use EchoFusion\Contracts\ModuleManager\ModuleManagerInterface;
 use EchoFusion\ModuleManager\Exceptions\DuplicateModuleException;
 use EchoFusion\ModuleManager\Exceptions\DuplicateRouteException;
 use EchoFusion\ModuleManager\Exceptions\ModuleException;
 use EchoFusion\ModuleManager\Exceptions\ModuleNotFoundException;
+use function array_is_list;
 use function array_key_exists;
-use function array_map;
 use function array_values;
+use function is_array;
 use function sprintf;
 
 final class ModuleManager implements ModuleManagerInterface
@@ -63,12 +63,12 @@ final class ModuleManager implements ModuleManagerInterface
 
     public function getConfig(): array
     {
-        $configs = array_map(
-            static fn (ModuleInterface $module): array => $module->getConfig(),
-            array_values($this->modules),
-        );
+        $config = [];
+        foreach ($this->modules as $module) {
+            $config = self::mergeConfig($config, $module->getConfig());
+        }
 
-        return (new Config(...$configs))->all();
+        return $config;
     }
 
     public function getProviders(): array
@@ -107,6 +107,35 @@ final class ModuleManager implements ModuleManagerInterface
         }
 
         return $routes;
+    }
+
+    /**
+     * Merge `$override` into `$base`: associative arrays are merged recursively, lists and scalars are replaced.
+     *
+     * @param array<array-key, mixed> $base
+     * @param array<array-key, mixed> $override
+     *
+     * @return array<array-key, mixed>
+     */
+    private static function mergeConfig(array $base, array $override): array
+    {
+        foreach ($override as $key => $value) {
+            if (
+                is_array($value)
+                && isset($base[$key])
+                && is_array($base[$key])
+                && !array_is_list($value)
+                && !array_is_list($base[$key])
+            ) {
+                $base[$key] = self::mergeConfig($base[$key], $value);
+
+                continue;
+            }
+
+            $base[$key] = $value;
+        }
+
+        return $base;
     }
 
     public function getTemplatePaths(): array
